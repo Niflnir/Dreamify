@@ -6,7 +6,6 @@ import (
 	"github.com/Niflnir/Dreame/api"
 	"github.com/Niflnir/Dreame/database"
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 )
 
 func main() {
