@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type postForCreate struct {
+type postForCreateUpdate struct {
   Title string `json:"title"`
   Body  string `json:"body"`
 }
@@ -33,7 +33,7 @@ func ListPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
-	var c postForCreate
+	var c postForCreateUpdate
   err := json.NewDecoder(r.Body).Decode(&c)
 	if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
@@ -41,6 +41,9 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	database.CreatePost(database.DBCon, c.Title, c.Body)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusBadRequest)
+  }
   
   res := Response {
     Data: "",
@@ -52,12 +55,50 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
+  vars := mux.Vars(r)
+  id_num := validateAndExtractIdParameter(w, vars)
+
+  p, err := database.DeletePost(database.DBCon, id_num)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusBadRequest)
+  }
+
+  res := Response {
+    Data: p,
+    StatusCode: http.StatusOK,
+    Message: "Successfully deleted post",
+  }
+
+  sendJsonResponse(w, res)
+}
+
+func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  id_num := validateAndExtractIdParameter(w, vars)
+
+	var u postForCreateUpdate
+  err := json.NewDecoder(r.Body).Decode(&u)
+	if err != nil {
+    http.Error(w, err.Error(), http.StatusBadRequest)
+    return
 	}
 
-  vars := mux.Vars(r)
+  var p database.Post
+  p, err = database.UpdatePost(database.DBCon, id_num, u.Title, u.Body)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusBadRequest)
+  }
+
+  res := Response {
+    Data: p,
+    StatusCode: http.StatusOK,
+    Message: "Successfully updated post",
+  }
+
+  sendJsonResponse(w, res)
+}
+
+func validateAndExtractIdParameter(w http.ResponseWriter, vars map[string]string) int {
   id, ok := vars["id"]
   if !ok {
     log.Info().Msg("id is missing in parameters")
@@ -70,15 +111,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
   }
 
-	database.DeletePost(database.DBCon, id_num)
-
-  res := Response {
-    Data: "",
-    StatusCode: http.StatusOK,
-    Message: "Successfully deleted post",
-  }
-
-  sendJsonResponse(w, res)
+  return id_num
 }
 
 func sendJsonResponse(w http.ResponseWriter, res Response) {

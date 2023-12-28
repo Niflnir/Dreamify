@@ -15,6 +15,7 @@ func main() {
   r.HandleFunc("/post", api.ListPostHandler).Methods("GET")
 	r.HandleFunc("/post", api.CreatePostHandler).Methods("POST")
   r.HandleFunc("/post/{id}", api.DeletePostHandler).Methods("DELETE")
+  r.HandleFunc("/post/{id}", api.UpdatePostHandler).Methods("PUT")
 	http.ListenAndServe(":8080", r)
 }
 
