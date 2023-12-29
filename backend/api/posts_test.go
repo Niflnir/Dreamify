@@ -91,7 +91,7 @@ func createPost(t *testing.T) database.Post {
 }
 
 func getPostFromResponse(rr *httptest.ResponseRecorder, t *testing.T) database.Post {
-  var response PostResponse 
+  var response postResponse 
   err := json.NewDecoder(rr.Body).Decode(&response)
   if err != nil {
     t.Fatal(err)

@@ -15,13 +15,13 @@ type postForCreateUpdate struct {
   Body  string `json:"body"`
 }
 
-type PostsResponse struct {
+type postsResponse struct {
 	Data []database.Post `json:"data"`
 	StatusCode int `json:"statusCode"`
 	Message string `json:"message"`
 }
 
-type PostResponse struct {
+type postResponse struct {
 	Data database.Post `json:"data"`
 	StatusCode int `json:"statusCode"`
 	Message string `json:"message"`
@@ -29,7 +29,7 @@ type PostResponse struct {
 
 func ListPostHandler(w http.ResponseWriter, r *http.Request) {
   posts := database.ListPosts(database.DBCon);
-  res := PostsResponse {
+  res := postsResponse {
     Data: posts,
     StatusCode: http.StatusOK,
     Message: "Successfully retrieved posts",
@@ -52,7 +52,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
   
-  res := PostResponse {
+  res := postResponse {
     Data: postCreated,
     StatusCode: http.StatusCreated,
     Message: "Successfully created post",
@@ -70,7 +70,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
 
-  res := PostResponse {
+  res := postResponse {
     Data: postDeleted,
     StatusCode: http.StatusOK,
     Message: "Successfully deleted post",
@@ -96,7 +96,7 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
 
-  res := PostResponse {
+  res := postResponse {
     Data: updatedPost,
     StatusCode: http.StatusOK,
     Message: "Successfully updated post",
@@ -121,7 +121,7 @@ func validateAndExtractIdParameter(w http.ResponseWriter, vars map[string]string
   return id_num
 }
 
-func (res *PostResponse) sendJsonResponse(w http.ResponseWriter) {
+func (res *postResponse) sendJsonResponse(w http.ResponseWriter) {
   jsonData, err := json.Marshal(res)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -133,7 +133,7 @@ func (res *PostResponse) sendJsonResponse(w http.ResponseWriter) {
   w.Write(jsonData)
 }
 
-func (res *PostsResponse) sendJsonResponse(w http.ResponseWriter) {
+func (res *postsResponse) sendJsonResponse(w http.ResponseWriter) {
   jsonData, err := json.Marshal(res)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
