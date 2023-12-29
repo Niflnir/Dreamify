@@ -3,8 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/pressly/goose"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -18,19 +20,19 @@ const (
 var DBCon *sql.DB
 
 func ConnectToDB() *sql.DB {
+  var err error
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	db, err := sql.Open("postgres", psqlconn)
+	DBCon, err = sql.Open("postgres", psqlconn)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Successfully connected to database:%s!\n", dbname)
 
-	// downMigrations := os.Args[1]
-	// if downMigrations == "down" {
-	//   goose.Down(db, "migrations")
-	//   db.Close()
-	//   os.Exit(1)
-	// }
+  // Test DB connection
+  err = DBCon.Ping()
+  if err != nil {
+    log.Fatal(err)
+  }
+	fmt.Printf("Successfully connected to database:%s!\n", dbname)
 
 	// Set SQL dialect to postgresql
 	if err := goose.SetDialect("postgres"); err != nil {
@@ -38,11 +40,5 @@ func ConnectToDB() *sql.DB {
 	}
 	fmt.Println("Successfully changed dialect to postgres!")
 
-	// Apply migrations to db
-	if err := goose.Up(db, "migrations"); err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully migrated database!")
-
-	return db
+  return DBCon
 }

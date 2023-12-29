@@ -5,13 +5,17 @@ import (
 
 	"github.com/Niflnir/Dreame/api"
 	"github.com/Niflnir/Dreame/database"
-	_ "github.com/lib/pq"
+	"github.com/gorilla/mux"
 )
 
 func main() {
   database.ConnectToDB()
+  r := mux.NewRouter()
 
-	http.HandleFunc("/post", api.CreatePostHandler)
-	http.ListenAndServe(":8080", nil)
+  r.HandleFunc("/post", api.ListPostHandler).Methods("GET")
+	r.HandleFunc("/post", api.CreatePostHandler).Methods("POST")
+  r.HandleFunc("/post/{id}", api.DeletePostHandler).Methods("DELETE")
+  r.HandleFunc("/post/{id}", api.UpdatePostHandler).Methods("PUT")
+	http.ListenAndServe(":8080", r)
 }
 
