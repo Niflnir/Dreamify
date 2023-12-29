@@ -122,5 +122,6 @@ func sendJsonResponse(w http.ResponseWriter, res Response) {
   }
 
   w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(res.StatusCode)
   w.Write(jsonData)
 }
