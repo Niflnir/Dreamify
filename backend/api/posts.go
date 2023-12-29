@@ -15,21 +15,27 @@ type postForCreateUpdate struct {
   Body  string `json:"body"`
 }
 
-type Response struct {
-	Data interface{} `json:"data"`
+type PostsResponse struct {
+	Data []database.Post `json:"data"`
+	StatusCode int `json:"statusCode"`
+	Message string `json:"message"`
+}
+
+type PostResponse struct {
+	Data database.Post `json:"data"`
 	StatusCode int `json:"statusCode"`
 	Message string `json:"message"`
 }
 
 func ListPostHandler(w http.ResponseWriter, r *http.Request) {
   posts := database.ListPosts(database.DBCon);
-  res := Response {
+  res := PostsResponse {
     Data: posts,
     StatusCode: http.StatusOK,
     Message: "Successfully retrieved posts",
   }
 
-  sendJsonResponse(w, res)
+  res.sendJsonResponse(w)
 }
 
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,36 +46,37 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
     return
 	}
 
-	database.CreatePost(database.DBCon, c.Title, c.Body)
+  var postCreated database.Post
+  postCreated, err = database.CreatePost(database.DBCon, c.Title, c.Body)
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
   
-  res := Response {
-    Data: "",
+  res := PostResponse {
+    Data: postCreated,
     StatusCode: http.StatusCreated,
     Message: "Successfully created post",
   }
 
-  sendJsonResponse(w, res)
+  res.sendJsonResponse(w)
 }
 
 func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   id_num := validateAndExtractIdParameter(w, vars)
 
-  p, err := database.DeletePost(database.DBCon, id_num)
+  postDeleted, err := database.DeletePost(database.DBCon, id_num)
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
 
-  res := Response {
-    Data: p,
+  res := PostResponse {
+    Data: postDeleted,
     StatusCode: http.StatusOK,
     Message: "Successfully deleted post",
   }
 
-  sendJsonResponse(w, res)
+  res.sendJsonResponse(w)
 }
 
 func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,19 +90,19 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
     return
 	}
 
-  var p database.Post
-  p, err = database.UpdatePost(database.DBCon, id_num, u.Title, u.Body)
+  var updatedPost database.Post
+  updatedPost, err = database.UpdatePost(database.DBCon, id_num, u.Title, u.Body)
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
 
-  res := Response {
-    Data: p,
+  res := PostResponse {
+    Data: updatedPost,
     StatusCode: http.StatusOK,
     Message: "Successfully updated post",
   }
 
-  sendJsonResponse(w, res)
+  res.sendJsonResponse(w)
 }
 
 func validateAndExtractIdParameter(w http.ResponseWriter, vars map[string]string) int {
@@ -114,7 +121,19 @@ func validateAndExtractIdParameter(w http.ResponseWriter, vars map[string]string
   return id_num
 }
 
-func sendJsonResponse(w http.ResponseWriter, res Response) {
+func (res *PostResponse) sendJsonResponse(w http.ResponseWriter) {
+  jsonData, err := json.Marshal(res)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(res.StatusCode)
+  w.Write(jsonData)
+}
+
+func (res *PostsResponse) sendJsonResponse(w http.ResponseWriter) {
   jsonData, err := json.Marshal(res)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
