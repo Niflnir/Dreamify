@@ -48,7 +48,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
   postResponse := postResponse {
     Data: &updatedPost,
     StatusCode: http.StatusOK,
-    Message: "Successfully updated post",
+    Message: "Successfully generated image for post",
   }
 
   postResponse.sendJsonResponse(w)

@@ -45,19 +45,22 @@ func TestCreatePostHandler(t *testing.T) {
   // Assert
   assertStatusCode(rr.Result().StatusCode, http.StatusCreated, t)
 
-  post := getPostFromResponse(rr, t)
-  if post.Title != postToCreate.Title || post.Body != postToCreate.Body {
+  createdPost := getPostFromResponse(rr, t)
+  if createdPost.Title != postToCreate.Title || createdPost.Body != postToCreate.Body {
     t.Errorf("Incorrect response data returned!\n")
   }
+
+  // Clean up
+  deletePost(t, fmt.Sprintf("%v", createdPost.Id))
 }
 
 func TestDeletePostHandler(t *testing.T) {
   // Prep
   initTest()
-  post := createPost(t)
+  postToDelete := createPost(t)
 
   rr := httptest.NewRecorder()
-  id := fmt.Sprintf("%d", post.Id)
+  id := fmt.Sprintf("%v", postToDelete.Id)
   req := httptest.NewRequest("DELETE", "/post/" + id, nil)
   req = mux.SetURLVars(req, map[string]string{"id": id})
 
@@ -66,6 +69,42 @@ func TestDeletePostHandler(t *testing.T) {
 
   // Assert
   assertStatusCode(rr.Result().StatusCode, http.StatusOK, t)
+
+  deletedPost := getPostFromResponse(rr, t)
+  if deletedPost.Title != postToDelete.Title || deletedPost.Body != postToDelete.Body {
+    t.Errorf("Incorrect response data returned!\n")
+  }
+}
+
+func TestUpdatePostHandler(t *testing.T) {
+  // Prep
+  initTest()
+  post := createPost(t)
+
+  postToUpdate := postForCreateUpdate {
+    Title: "updated test title",
+    Body: "updated test body",
+  }
+  postToUpdateJson, _ := json.Marshal(postToUpdate)
+
+  rr := httptest.NewRecorder()
+  id := fmt.Sprintf("%v", post.Id)
+  req := httptest.NewRequest("PUT", "/post/" + id, bytes.NewBuffer(postToUpdateJson))
+  req = mux.SetURLVars(req, map[string]string{"id": id})
+
+  // Exec
+  UpdatePostHandler(rr, req)
+
+  // Assert
+  assertStatusCode(rr.Result().StatusCode, http.StatusOK, t)
+
+  updatedPost := getPostFromResponse(rr, t)
+  if updatedPost.Title != postToUpdate.Title || updatedPost.Body != postToUpdate.Body {
+    t.Errorf("Incorrect response data returned!\n")
+  }
+
+  // Clean up
+  deletePost(t, id)
 }
 
 func assertStatusCode(actualStatusCode int, expectedStatusCode int, t *testing.T) {
@@ -88,6 +127,14 @@ func createPost(t *testing.T) database.Post {
   post := getPostFromResponse(rr, t)
 
   return post
+}
+
+func deletePost(t *testing.T, id string) {
+  rr := httptest.NewRecorder()
+  req := httptest.NewRequest("DELETE", "/post/" + id, nil)
+  req = mux.SetURLVars(req, map[string]string{"id": id})
+
+  DeletePostHandler(rr, req)
 }
 
 func getPostFromResponse(rr *httptest.ResponseRecorder, t *testing.T) database.Post {
