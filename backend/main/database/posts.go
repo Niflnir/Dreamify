@@ -108,7 +108,7 @@ func DeletePost(db *sql.DB, id int) (Post, error) {
 }
 
 func UpdatePost(db *sql.DB, id int, title string, body string) (Post, error) {
-  existingPost, err := getPostById(id, db)
+  existingPost, err := GetPostById(id)
   if err != nil {
     log.Error().Err(err)
     return Post{}, err
@@ -172,8 +172,8 @@ func rowsToPost(rows *sql.Rows) Post {
   return post
 }
 
-func getPostById(id int, db *sql.DB) (Post, error) {
-  row := db.QueryRow("SELECT * from posts where id=$1", id)
+func GetPostById(id int) (Post, error) {
+  row := DBCon.QueryRow("SELECT * from posts where id=$1", id)
 
   var p Post 
   var err error
