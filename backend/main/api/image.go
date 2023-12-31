@@ -25,7 +25,7 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
   var conn *grpc.ClientConn
 	conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Info().Msgf("did not connect: %v", err)
+		log.Error().Msgf("Unable to connect to grpc server: %v", err)
 	}
 	defer conn.Close()
 
@@ -33,9 +33,23 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 	req := &pb.ImageRequest{Prompt: post.Body}
 	res, err := c.GetImageUrl(context.Background(), req)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Msgf("%v", err)
 		return
 	}
 
-	log.Info().Msgf("Response: %s", res.GetImageUrl())
+	log.Info().Msgf("Response: %v", res)
+  
+  updatedPost, err := database.UpdatePost(id_num, "", "", res.GetImageUrl())
+  if err != nil {
+		log.Error().Msgf("%v", err)
+    return
+  }
+
+  postResponse := postResponse {
+    Data: &updatedPost,
+    StatusCode: http.StatusOK,
+    Message: "Successfully updated post",
+  }
+
+  postResponse.sendJsonResponse(w)
 }
