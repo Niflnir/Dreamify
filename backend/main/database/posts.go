@@ -13,8 +13,8 @@ type Post struct {
   DateCreated string
 }
 
-func ListPosts(db *sql.DB) []Post {
-  rows, err := db.Query("SELECT id, title, body, TO_CHAR(date_created, 'DD-MM-YYYY') as date FROM posts")
+func ListPosts() []Post {
+  rows, err := DBCon.Query("SELECT id, title, body, TO_CHAR(date_created, 'DD-MM-YYYY') as date FROM posts")
 	if err != nil {
 		log.Error().Err(err)
   }
@@ -29,9 +29,9 @@ func ListPosts(db *sql.DB) []Post {
   return posts
 }
 
-func CreatePost(db *sql.DB, title string, body string) (Post, error) {
+func CreatePost(title string, body string) (Post, error) {
   // Start transaction
-  tx, err := db.Begin()
+  tx, err := DBCon.Begin()
   if err != nil {
 		log.Error().Err(err)
     return Post{}, err
@@ -68,9 +68,9 @@ func CreatePost(db *sql.DB, title string, body string) (Post, error) {
   return p, err
 }
 
-func DeletePost(db *sql.DB, id int) (Post, error) {
+func DeletePost(id int) (Post, error) {
   // Start transaction
-  tx, err := db.Begin()
+  tx, err := DBCon.Begin()
   if err != nil {
 		log.Error().Err(err)
     return Post{}, err
@@ -107,7 +107,7 @@ func DeletePost(db *sql.DB, id int) (Post, error) {
   return p, err
 }
 
-func UpdatePost(db *sql.DB, id int, title string, body string) (Post, error) {
+func UpdatePost(id int, title string, body string) (Post, error) {
   existingPost, err := GetPostById(id)
   if err != nil {
     log.Error().Err(err)
@@ -123,7 +123,7 @@ func UpdatePost(db *sql.DB, id int, title string, body string) (Post, error) {
   }
 
   // Start transaction
-  tx, err := db.Begin()
+  tx, err := DBCon.Begin()
   if err != nil {
 		log.Error().Err(err)
     return Post{}, err

@@ -28,7 +28,7 @@ type postResponse struct {
 }
 
 func ListPostHandler(w http.ResponseWriter, r *http.Request) {
-  posts := database.ListPosts(database.DBCon);
+  posts := database.ListPosts();
   res := postsResponse {
     Data: posts,
     StatusCode: http.StatusOK,
@@ -47,7 +47,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
   var postCreated database.Post
-  postCreated, err = database.CreatePost(database.DBCon, c.Title, c.Body)
+  postCreated, err = database.CreatePost(c.Title, c.Body)
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
@@ -65,7 +65,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   id_num := validateAndExtractIdParameter(w, vars)
 
-  postDeleted, err := database.DeletePost(database.DBCon, id_num)
+  postDeleted, err := database.DeletePost(id_num)
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
@@ -91,7 +91,7 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
   var updatedPost database.Post
-  updatedPost, err = database.UpdatePost(database.DBCon, id_num, u.Title, u.Body)
+  updatedPost, err = database.UpdatePost(id_num, u.Title, u.Body)
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
