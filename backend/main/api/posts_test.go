@@ -97,7 +97,7 @@ func getPostFromResponse(rr *httptest.ResponseRecorder, t *testing.T) database.P
     t.Fatal(err)
   }
 
-  return response.Data
+  return *response.Data
 }
 
 func initTest() {

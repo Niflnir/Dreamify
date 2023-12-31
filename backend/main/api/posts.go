@@ -13,16 +13,17 @@ import (
 type postForCreateUpdate struct {
   Title string `json:"title"`
   Body  string `json:"body"`
+  ImageUrl string `json:"image_url"`
 }
 
 type postsResponse struct {
-	Data []database.Post `json:"data"`
+	Data *[]database.Post `json:"data"`
 	StatusCode int `json:"statusCode"`
 	Message string `json:"message"`
 }
 
 type postResponse struct {
-	Data database.Post `json:"data"`
+	Data *database.Post `json:"data"`
 	StatusCode int `json:"statusCode"`
 	Message string `json:"message"`
 }
@@ -30,7 +31,7 @@ type postResponse struct {
 func ListPostHandler(w http.ResponseWriter, r *http.Request) {
   posts := database.ListPosts();
   res := postsResponse {
-    Data: posts,
+    Data: &posts,
     StatusCode: http.StatusOK,
     Message: "Successfully retrieved posts",
   }
@@ -51,11 +52,20 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     http.Error(w, err.Error(), http.StatusBadRequest)
   }
-  
-  res := postResponse {
-    Data: postCreated,
-    StatusCode: http.StatusCreated,
-    Message: "Successfully created post",
+
+  var res postResponse
+  if err != nil {
+    res = postResponse {
+      Data: nil,
+      StatusCode: http.StatusBadRequest,
+      Message: "Failed to create post",
+    }
+  } else {
+    res = postResponse {
+      Data: &postCreated,
+      StatusCode: http.StatusCreated,
+      Message: "Successfully created post",
+    }
   }
 
   res.sendJsonResponse(w)
@@ -65,15 +75,21 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   id_num := validateAndExtractIdParameter(w, vars)
 
-  postDeleted, err := database.DeletePost(id_num)
-  if err != nil {
-    http.Error(w, err.Error(), http.StatusBadRequest)
-  }
+  deletedPost, err := database.DeletePost(id_num)
 
-  res := postResponse {
-    Data: postDeleted,
-    StatusCode: http.StatusOK,
-    Message: "Successfully deleted post",
+  var res postResponse
+  if err != nil {
+    res = postResponse {
+      Data: nil,
+      StatusCode: http.StatusBadRequest,
+      Message: "Failed to delete post",
+    }
+  } else {
+    res = postResponse {
+      Data: &deletedPost,
+      StatusCode: http.StatusOK,
+      Message: "Successfully deleted post",
+    }
   }
 
   res.sendJsonResponse(w)
@@ -91,15 +107,21 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
   var updatedPost database.Post
-  updatedPost, err = database.UpdatePost(id_num, u.Title, u.Body)
-  if err != nil {
-    http.Error(w, err.Error(), http.StatusBadRequest)
-  }
+  updatedPost, err = database.UpdatePost(id_num, u.Title, u.Body, u.ImageUrl)
 
-  res := postResponse {
-    Data: updatedPost,
-    StatusCode: http.StatusOK,
-    Message: "Successfully updated post",
+  var res postResponse
+  if err != nil {
+    res = postResponse {
+      Data: nil,
+      StatusCode: http.StatusBadRequest,
+      Message: "Failed to update post",
+    }
+  } else {
+    res = postResponse {
+      Data: &updatedPost,
+      StatusCode: http.StatusOK,
+      Message: "Successfully updated post",
+    }
   }
 
   res.sendJsonResponse(w)
