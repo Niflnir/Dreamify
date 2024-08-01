@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/Niflnir/Dreame/database"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
-	"github.com/Niflnir/Dreame/database"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -19,10 +19,10 @@ const (
 
 func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-  id_num := validateAndExtractIdParameter(w, vars)
-  post, err := database.GetPostById(id_num)
+	id_num := validateAndExtractIdParameter(w, vars)
+	post, err := database.GetPostById(id_num)
 
-  var conn *grpc.ClientConn
+	var conn *grpc.ClientConn
 	conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error().Msgf("Unable to connect to grpc server: %v", err)
@@ -38,18 +38,18 @@ func GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().Msgf("Response: %v", res)
-  
-  updatedPost, err := database.UpdatePost(id_num, "", "", res.GetImageUrl())
-  if err != nil {
+
+	updatedPost, err := database.UpdatePost(id_num, "", "", res.GetImageUrl())
+	if err != nil {
 		log.Error().Msgf("%v", err)
-    return
-  }
+		return
+	}
 
-  postResponse := postResponse {
-    Data: &updatedPost,
-    StatusCode: http.StatusOK,
-    Message: "Successfully generated image for post",
-  }
+	postResponse := postResponse{
+		Data:       &updatedPost,
+		StatusCode: http.StatusOK,
+		Message:    "Successfully generated image for post",
+	}
 
-  postResponse.sendJsonResponse(w)
+	postResponse.sendJsonResponse(w)
 }

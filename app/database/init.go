@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/pressly/goose"
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose"
 )
 
 const (
@@ -20,18 +20,18 @@ const (
 var DBCon *sql.DB
 
 func ConnectToDB() *sql.DB {
-  var err error
+	var err error
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	DBCon, err = sql.Open("postgres", psqlconn)
 	if err != nil {
 		panic(err)
 	}
 
-  // Test DB connection
-  err = DBCon.Ping()
-  if err != nil {
-    log.Fatal(err)
-  }
+	// Test DB connection
+	err = DBCon.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Printf("Successfully connected to database:%s!\n", dbname)
 
 	// Set SQL dialect to postgresql
@@ -40,5 +40,5 @@ func ConnectToDB() *sql.DB {
 	}
 	fmt.Println("Successfully changed dialect to postgres!")
 
-  return DBCon
+	return DBCon
 }
