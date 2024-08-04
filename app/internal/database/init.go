@@ -17,10 +17,10 @@ const (
 	dbname   = "dreame"
 )
 
-var DBCon *sql.DB
-
 func ConnectToDB() *sql.DB {
 	var err error
+	var DBCon *sql.DB
+
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	DBCon, err = sql.Open("postgres", psqlconn)
 	if err != nil {
