@@ -4,40 +4,19 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Niflnir/Dreame/internal/mocks"
 	"github.com/Niflnir/Dreame/internal/models"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type MockPostRepository struct {
-	mock.Mock
-}
-
-func (m *MockPostRepository) ListPosts() ([]models.Post, error) {
-	args := m.Called()
-	return args.Get(0).([]models.Post), args.Error(1)
-}
-
-func (m *MockPostRepository) CreatePost(title string, body string) (models.Post, error) {
-	args := m.Called(title, body)
-	return args.Get(0).(models.Post), args.Error(1)
-}
-
-func (m *MockPostRepository) DeletePost(id int) error {
-	args := m.Called(id)
-	return args.Error(0)
-}
-
-func (m *MockPostRepository) UpdatePost(id int, title string, body string, image_url string) (models.Post, error) {
-	args := m.Called(id, title, body, image_url)
-	return args.Get(0).(models.Post), args.Error(1)
-}
 
 func TestListPostsSuccess(t *testing.T) {
 	// Setup
-	mockRepo := &MockPostRepository{}
+	mockRepo := &mocks.MockPostRepository{}
 	service := NewPostServiceImpl(mockRepo)
-	expectedPosts := []models.Post{{Id: 1, Title: "Test Post"}}
+	expectedPosts := []models.Post{
+		{Id: 1, Title: "Test Post", Body: "Test Body"},
+		{Id: 2, Title: "Test Post", Body: "Test Body"},
+	}
 	mockRepo.On("ListPosts").Return(expectedPosts, nil)
 
 	// Execute
@@ -53,7 +32,7 @@ func TestListPostsSuccess(t *testing.T) {
 
 func TestListPostsFailure(t *testing.T) {
 	// Setup
-	mockRepo := &MockPostRepository{}
+	mockRepo := &mocks.MockPostRepository{}
 	service := NewPostServiceImpl(mockRepo)
 	expectedError := errors.New("Test Error")
 	mockRepo.On("ListPosts").Return([]models.Post{}, expectedError)
@@ -64,6 +43,81 @@ func TestListPostsFailure(t *testing.T) {
 	// Assert
 	assert.Error(t, err, expectedError)
 	assert.Equal(t, []models.Post{}, posts)
+
+	// Verify
+	mockRepo.AssertExpectations(t)
+}
+
+func TestCreatePostSuccess(t *testing.T) {
+	// Setup
+	mockRepo := &mocks.MockPostRepository{}
+	service := NewPostServiceImpl(mockRepo)
+	testTitle := "Test Title"
+	testBody := "Test Body"
+	expectedPost := models.Post{Id: 1, Title: testTitle, Body: testBody}
+	mockRepo.On("CreatePost", testTitle, testBody).Return(expectedPost, nil)
+
+	// Execute
+	post, err := service.CreatePost(testTitle, testBody)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Equal(t, post, expectedPost)
+
+	// Verify
+	mockRepo.AssertExpectations(t)
+}
+
+func TestCreatePostFailure(t *testing.T) {
+	// Setup
+	mockRepo := &mocks.MockPostRepository{}
+	service := NewPostServiceImpl(mockRepo)
+	testTitle := "Test Title"
+	testBody := "Test Body"
+	expectedError := errors.New("Test Error")
+	mockRepo.On("CreatePost", testTitle, testBody).Return(models.Post{}, expectedError)
+
+	// Execute
+	post, err := service.CreatePost(testTitle, testBody)
+	assert.Equal(t, models.Post{}, post)
+
+	// Assert
+	assert.Error(t, err, expectedError)
+
+	// Verify
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDeletePostSuccess(t *testing.T) {
+	// Setup
+	mockRepo := &mocks.MockPostRepository{}
+	service := NewPostServiceImpl(mockRepo)
+	testId := 1
+	mockRepo.On("DeletePost", testId).Return(nil)
+
+	// Execute
+	err := service.DeletePost(testId)
+
+	// Assert
+	assert.NoError(t, err)
+
+	// Verify
+	mockRepo.AssertExpectations(t)
+}
+
+func TestDeletePostFailure(t *testing.T) {
+	// Setup
+	mockRepo := &mocks.MockPostRepository{}
+	service := NewPostServiceImpl(mockRepo)
+	testId := 1
+	expectedError := errors.New("test error")
+	mockRepo.On("DeletePost", testId).Return(expectedError)
+
+	// Execute
+	err := service.DeletePost(testId)
+
+	// Assert
+	assert.Error(t, err, expectedError)
 
 	// Verify
 	mockRepo.AssertExpectations(t)

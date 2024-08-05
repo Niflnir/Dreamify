@@ -1,7 +1,6 @@
-package api
+package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -10,14 +9,6 @@ import (
 	"github.com/Niflnir/Dreame/internal/service"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
-	pb "github.com/Niflnir/Dreame/grpc/image"
-)
-
-const (
-	address = "localhost:50051"
 )
 
 type postForCreateUpdate struct {
@@ -65,7 +56,7 @@ func (c *PostControllerImpl) ListPostHandler(w http.ResponseWriter, r *http.Requ
 
 func (c *PostControllerImpl) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	var p postForCreateUpdate
-	err := json.NewDecoder(r.Body).Decode(&c)
+	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
 		http.Error(w, "Failed to create post", http.StatusBadRequest)
 		log.Error().Msgf("%v", err)
@@ -130,43 +121,6 @@ func (c *PostControllerImpl) UpdatePostHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	res.sendJsonResponse(w)
-}
-
-func (c *PostControllerImpl) GenerateImageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id_num := validateAndExtractIdParameter(w, vars)
-	post, err := c.PostService.GetPostById(id_num)
-
-	var conn *grpc.ClientConn
-	conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Error().Msgf("Unable to connect to grpc server: %v", err)
-	}
-	defer conn.Close()
-
-	client := pb.NewImageGeneratorClient(conn)
-	req := &pb.ImageRequest{Prompt: post.Body}
-	res, err := client.GetImageUrl(context.Background(), req)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		return
-	}
-
-	log.Info().Msgf("Response: %v", res)
-
-	updatedPost, err := c.PostService.UpdatePost(id_num, "", "", res.GetImageUrl())
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		return
-	}
-
-	postResponse := postResponse{
-		Data:       updatedPost,
-		StatusCode: http.StatusOK,
-		Message:    "Successfully generated image for post",
-	}
-
-	postResponse.sendJsonResponse(w)
 }
 
 func (res *postResponse) sendJsonResponse(w http.ResponseWriter) {
