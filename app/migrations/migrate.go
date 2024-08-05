@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Niflnir/Dreame/database"
+	"github.com/Niflnir/Dreame/internal/database"
 	"github.com/pressly/goose"
 )
 
