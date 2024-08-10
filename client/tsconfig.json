@@ -5,7 +5,7 @@
   },
   "include": [
     "./app/**/*",
-    "./assets/icons/**/*",
+    "./common/**/*",
     "custom.d.ts"
   ]
 }

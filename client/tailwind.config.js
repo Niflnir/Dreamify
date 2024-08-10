@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  content: ["./app/**/*.{js,jsx,ts,tsx}", "./common/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       backgroundColor: {
@@ -9,6 +9,12 @@ module.exports = {
       },
       textColor: {
         primary: '#FFFFFF'
+      },
+      borderColor: {
+        primary: '#532B88'
+      },
+      outlineColor: {
+        primary: '#532B88'
       },
       fontFamily: {
         pthin: ["Poppins-Thin", "sans-serif"],

@@ -12,9 +12,9 @@ const TabsLayout = () => {
         }
       }}>
         <Tabs.Screen
-          name='journal'
+          name='dreams'
           options={{
-            title: 'Journal',
+            title: 'Dreams',
             headerShown: false,
             tabBarIcon: () => {
               return (
