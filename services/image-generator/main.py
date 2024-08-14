@@ -19,7 +19,7 @@ class ImageGeneratorService(image_generator_pb2_grpc.ImageGenerator):
 
 def generateImageAndReturnImageUrl(prompt):
     response = client.images.generate(
-      model="dall-e-3",
+      model="dall-e-2",
       prompt="Create a stunning wallpaper based on :[" + prompt + "]",
       size="1024x1024",
       quality="standard",
