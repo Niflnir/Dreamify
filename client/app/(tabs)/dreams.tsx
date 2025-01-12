@@ -6,15 +6,20 @@ import { useEffect, useState } from "react";
 import { Post } from "../../common/types";
 import Dream from "../../common/components/Dream";
 import { router } from "expo-router";
+import { Colours } from "../../common/colours";
 
 const Dreams = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPosts = async () => {
       try {
         const response = await fetch('http://192.168.50.214:8080/posts');
+        if (!response.ok) {
+          throw new Error('Failed to retrieve posts')
+        }
+
         const json = await response.json();
         const postsFromResponse: Post[] = [];
         json.data.forEach((data: any) => {
@@ -28,50 +33,48 @@ const Dreams = () => {
           postsFromResponse.push(post);
         })
         setPosts(postsFromResponse);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchData();
+    fetchPosts();
   }, [])
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="h-full items-center justify-center bg-primary">
+        <ActivityIndicator size="large" color={Colours.primary} />
+        <Text className="mt-2 text-white">Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className='h-full bg-primary'>
-      {
-        isLoading ?
-          <ActivityIndicator className='h-full' size='large' color='#532B88' /> :
-          <View className='flex flex-col'>
-            <Text className='px-6 pb-4 pt-8 font-pbold text-3xl text-primary'>Dreams</Text>
-            <ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 120 }}>
-              <View className='size-full flex flex-col gap-4 px-6'>
-                {
-                  posts.map((post) => (
-                    <Dream key={post.id} post={post} />
-                  ))
-                }
-              </View>
-            </ScrollView>
+      <View className='flex flex-col'>
+        <Text className='px-6 pb-4 pt-8 font-pbold text-3xl text-primary'>Dreams</Text>
+        <ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 120 }}>
+          <View className='size-full flex flex-col gap-4 px-6'>
+            {
+              posts.map((post) => (
+                <Dream key={post.id} post={post} />
+              ))
+            }
           </View>
-      }
-
-      {
-        isLoading &&
-        <View>
-          <Text>LOADING</Text>
-        </View>
-      }
+        </ScrollView>
+      </View>
 
       {/* New dream button */}
-      <View className='absolute bottom-4 right-6'>
+      <View className='absolute bottom-6 right-6'>
         <TouchableOpacity className="rounded-full bg-btnPrimary p-4" onPress={() => router.push('/dreams/edit')}>
           <WriteIcon width={25} height={25} />
         </TouchableOpacity>
       </View>
 
-      <StatusBar backgroundColor='#0F0F0F' />
+      <StatusBar backgroundColor={Colours.background} />
     </SafeAreaView>
   );
 }

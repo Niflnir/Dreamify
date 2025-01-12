@@ -3,6 +3,8 @@ import { SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import Header from '../common/components/Header';
 import Toast from 'react-native-toast-message';
+import * as SystemUI from 'expo-system-ui';
+import { Colours } from '../common/colours';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +29,13 @@ const RootLayout = () => {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, error]);
+
+  useEffect(() => {
+    const setSystemUIColour = async () => {
+      await SystemUI.setBackgroundColorAsync(Colours.background);
+    }
+    setSystemUIColour();
+  })
 
   if (!fontsLoaded) {
     return null;

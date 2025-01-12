@@ -3,6 +3,7 @@ import { useState } from "react";
 import { TextInput, TouchableOpacity, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { Colours } from "../../common/colours";
 
 const EditDream = () => {
   const [title, setTitle] = useState('New Dream');
@@ -38,7 +39,7 @@ const EditDream = () => {
       <View className='flex h-full flex-col px-3'>
         <TextInput
           className='rounded-lg p-2 font-pregular text-xl text-primary h-12'
-          cursorColor='#532B88'
+          cursorColor={Colours.primary}
           autoFocus={true}
           placeholder='Add a title'
           placeholderTextColor='gray'
@@ -49,7 +50,7 @@ const EditDream = () => {
         />
         <TextInput
           className='h-80 rounded-lg p-2 font-pregular text-primary'
-          cursorColor='#532B88'
+          cursorColor={Colours.primary}
           placeholder='What was your dream about?'
           placeholderTextColor='gray'
           textAlignVertical='top'
